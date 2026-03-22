@@ -1,0 +1,59 @@
+# Python
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+
+# Jupyter
+.ipynb_checkpoints
+
+# IDE
+.vscode
+.idea
+*.wpr
+*.wpu
+.vs
+x64
+
+# Temp
+build
+dist
+*.local
+tmp/
+*.tmp
+*.temp
+
+# VeighNa
+.vntrader
+
+# Visual Studio intermediate files
+*.exp
+*.iobj
+*.ipdb
+*.pdb
+
+# Documents
+_build
+_static
+_templates
+
+# Misc
+.DS_Store
+*.mo
+
+# Alpha
+lab/
+
+# vnpy libs
+vnpy_ctp/
+vnpy_data/
+vnpy_event/
+vnpy_gateway/
+vnpy_manager/
+vnpy_monitor/
+vnpy_order/
+vnpy_strategy/
+vnpy_trade/
+
+# logs
+**/logs/**

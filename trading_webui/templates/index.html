@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>期货程序化交易系统 - VNPY WebUI</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <!-- 头部 -->
+        <header class="header">
+            <div class="header-left">
+                <h1>期货程序化交易系统</h1>
+                <span class="version">VNPY 社区版 4.2.0</span>
+            </div>
+            <div class="header-right">
+                <div class="connection-status" id="connectionStatus">
+                    <span class="status-dot" id="statusDot"></span>
+                    <span id="statusText">未连接</span>
+                </div>
+                <div class="trading-status" id="tradingStatus">
+                    <span class="trading-indicator" id="tradingIndicator">▶</span>
+                    <span id="tradingText">交易已启用</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- 主体内容 -->
+        <div class="main-content">
+            <!-- 左侧面板：连接和配置 -->
+            <aside class="sidebar">
+                <div class="panel">
+                    <h3>连接设置</h3>
+                    <div class="form-group">
+                        <label>交易服务器:</label>
+                        <input type="text" id="tradeServer" placeholder="180.168.146.187:10130">
+                    </div>
+                    <div class="form-group">
+                        <label>行情服务器:</label>
+                        <input type="text" id="marketServer" placeholder="180.168.146.187:10131">
+                    </div>
+                    <div class="form-group">
+                        <label>经纪商代码:</label>
+                        <input type="text" id="brokerId" placeholder="9999">
+                    </div>
+                    <div class="form-group">
+                        <label>用户名:</label>
+                        <input type="text" id="userid" placeholder="用户ID">
+                    </div>
+                    <div class="form-group">
+                        <label>密码:</label>
+                        <input type="password" id="password" placeholder="密码">
+                    </div>
+                    <div class="form-group">
+                        <label>产品名称:</label>
+                        <input type="text" id="appid" placeholder="simnow_client_test">
+                    </div>
+                    <div class="form-group">
+                        <label>授权编码:</label>
+                        <input type="text" id="authcode" placeholder="0000000000000000">
+                    </div>
+                    <div class="button-group">
+                        <button id="connectBtn" class="btn btn-primary">连接</button>
+                        <button id="disconnectBtn" class="btn btn-secondary" disabled>断开</button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>行情订阅</h3>
+                    <div class="form-group">
+                        <label>合约代码:</label>
+                        <input type="text" id="subscribeSymbol" placeholder="ag2512">
+                    </div>
+                    <div class="form-group">
+                        <label>交易所:</label>
+                        <select id="subscribeExchange">
+                            <option value="SHFE">上期所 (SHFE)</option>
+                            <option value="DCE">大商所 (DCE)</option>
+                            <option value="CZCE">郑商所 (CZCE)</option>
+                            <option value="CFFEX">中金所 (CFFEX)</option>
+                            <option value="INE">上期能源 (INE)</option>
+                        </select>
+                    </div>
+                    <button id="subscribeBtn" class="btn btn-primary">订阅</button>
+                    
+                    <div class="subscriptions-list" id="subscriptionsList" style="margin-top: 10px; max-height: 150px; overflow-y: auto;">
+                        <small style="color: #6c757d;">已保存的订阅:</small>
+                        <div id="savedSubscriptions" style="font-size: 12px; margin-top: 5px;">
+                            <!-- 动态加载 -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>风控管理</h3>
+                    <div class="button-group">
+                        <button id="pauseTradingBtn" class="btn btn-warning">暂停交易</button>
+                        <button id="resumeTradingBtn" class="btn btn-success" disabled>恢复交易</button>
+                    </div>
+                    <div class="button-group">
+                        <button id="cancelAllBtn" class="btn btn-danger">全部撤单</button>
+                        <button id="configBtn" class="btn btn-secondary">风控配置</button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- 中间内容：数据显示 -->
+            <main class="content">
+                <!-- 标签页 -->
+                <div class="tabs">
+                    <button class="tab-button active" data-tab="market">行情</button>
+                    <button class="tab-button" data-tab="account">账户</button>
+                    <button class="tab-button" data-tab="position">持仓</button>
+                    <button class="tab-button" data-tab="order">委托</button>
+                    <button class="tab-button" data-tab="trade">成交</button>
+                    <button class="tab-button" data-tab="alert">告警</button>
+                    <button class="tab-button" data-tab="log">日志</button>
+                </div>
+
+                <!-- 行情面板 -->
+                <div id="marketPanel" class="tab-panel active">
+                    <h3>实时行情</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>合约</th>
+                                <th>最新价</th>
+                                <th>涨跌幅</th>
+                                <th>买价</th>
+                                <th>买量</th>
+                                <th>卖价</th>
+                                <th>卖量</th>
+                                <th>成交量</th>
+                                <th>时间</th>
+                            </tr>
+                        </thead>
+                        <tbody id="marketTableBody">
+                            <tr>
+                                <td colspan="9" class="empty-message">暂无数据</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 账户面板 -->
+                <div id="accountPanel" class="tab-panel">
+                    <h3>账户信息</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>账户ID</th>
+                                <th>总资金</th>
+                                <th>可用资金</th>
+                                <th>冻结资金</th>
+                                <th>盈亏</th>
+                            </tr>
+                        </thead>
+                        <tbody id="accountTableBody">
+                            <tr>
+                                <td colspan="5" class="empty-message">暂无数据</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 持仓面板 -->
+                <div id="positionPanel" class="tab-panel">
+                    <h3>持仓信息</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>合约</th>
+                                <th>方向</th>
+                                <th>持仓</th>
+                                <th>冻结</th>
+                                <th>均价</th>
+                                <th>盈亏</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="positionTableBody">
+                            <tr>
+                                <td colspan="7" class="empty-message">暂无数据</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 委托面板 -->
+                <div id="orderPanel" class="tab-panel">
+                    <h3>委托信息</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>委托编号</th>
+                                <th>合约</th>
+                                <th>方向</th>
+                                <th>开平</th>
+                                <th>价格</th>
+                                <th>数量</th>
+                                <th>已成交</th>
+                                <th>状态</th>
+                                <th>时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orderTableBody">
+                            <tr>
+                                <td colspan="10" class="empty-message">暂无数据</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 成交面板 -->
+                <div id="tradePanel" class="tab-panel">
+                    <h3>成交信息</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>成交编号</th>
+                                <th>合约</th>
+                                <th>方向</th>
+                                <th>开平</th>
+                                <th>价格</th>
+                                <th>数量</th>
+                                <th>时间</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tradeTableBody">
+                            <tr>
+                                <td colspan="7" class="empty-message">暂无数据</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 告警面板 -->
+                <div id="alertPanel" class="tab-panel">
+                    <h3>风控告警</h3>
+                    <div class="alert-stats">
+                        <div class="stat-card">
+                            <span class="stat-label">重复开仓告警</span>
+                            <span class="stat-value" id="repeatOpenCount">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">重复平仓告警</span>
+                            <span class="stat-value" id="repeatCloseCount">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">重复撤单告警</span>
+                            <span class="stat-value" id="repeatCancelCount">0</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-label">总告警次数</span>
+                            <span class="stat-value" id="totalAlertCount">0</span>
+                        </div>
+                    </div>
+                    <div class="alert-list" id="alertList">
+                        <div class="empty-message">暂无告警</div>
+                    </div>
+                </div>
+
+                <!-- 日志面板 -->
+                <div id="logPanel" class="tab-panel">
+                    <h3>系统日志</h3>
+                    <div class="log-controls">
+                        <button id="clearLogBtn" class="btn btn-secondary">清空日志</button>
+                        <label>
+                            <input type="checkbox" id="autoScrollLog" checked> 自动滚动
+                        </label>
+                    </div>
+                    <div class="log-container" id="logContainer">
+                        <div class="log-entry info">
+                            <span class="log-time">2025-01-01 00:00:00</span>
+                            <span class="log-level">INFO</span>
+                            <span class="log-message">系统已启动</span>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- 右侧面板：下单和统计 -->
+            <aside class="right-sidebar">
+                <div class="panel">
+                    <h3>快速下单</h3>
+                    <div class="form-group">
+                        <label>合约代码:</label>
+                        <input type="text" id="orderSymbol" placeholder="ag2512">
+                    </div>
+                    <div class="form-group">
+                        <label>交易所:</label>
+                        <select id="orderExchange">
+                            <option value="SHFE">上期所</option>
+                            <option value="DCE">大商所</option>
+                            <option value="CZCE">郑商所</option>
+                            <option value="CFFEX">中金所</option>
+                            <option value="INE">上期能源</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>价格:</label>
+                        <input type="number" id="orderPrice" step="1" placeholder="价格">
+                    </div>
+                    <div class="form-group">
+                        <label>数量:</label>
+                        <input type="number" id="orderVolume" value="1" min="1">
+                    </div>
+                    <div class="button-grid">
+                        <button class="btn btn-buy" onclick="sendOrder('LONG', 'OPEN')">买开</button>
+                        <button class="btn btn-sell" onclick="sendOrder('SHORT', 'CLOSE')">买平</button>
+                        <button class="btn btn-sell" onclick="sendOrder('SHORT', 'OPEN')">卖开</button>
+                        <button class="btn btn-buy" onclick="sendOrder('LONG', 'CLOSE')">卖平</button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>交易统计</h3>
+                    <div class="stat-item">
+                        <span class="stat-label">报单总数:</span>
+                        <span class="stat-value" id="totalOrders">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">成功报单:</span>
+                        <span class="stat-value" id="successOrders">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">失败报单:</span>
+                        <span class="stat-value" id="failedOrders">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">撤单总数:</span>
+                        <span class="stat-value" id="cancelledOrders">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">成交总数:</span>
+                        <span class="stat-value" id="totalTrades">0</span>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>当前时间</h3>
+                    <div class="clock">
+                        <div id="currentTime" class="time-display">--:--:--</div>
+                        <div id="currentDate" class="date-display">----/--/--</div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- 配置弹窗 -->
+    <div id="configModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>风控配置</h2>
+                <span class="close" onclick="closeConfigModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="config-section">
+                    <h3>重复报单类阈值</h3>
+                    <div class="form-group">
+                        <label>重复开仓阈值 (笔):</label>
+                        <input type="number" id="cfgRepeatOpen" value="10" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>重复平仓阈值 (笔):</label>
+                        <input type="number" id="cfgRepeatClose" value="10" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>重复撤单阈值 (笔):</label>
+                        <input type="number" id="cfgRepeatCancel" value="10" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>时间窗口 (秒):</label>
+                        <input type="number" id="cfgTimeWindow" value="60" min="1">
+                    </div>
+                </div>
+                
+                <div class="config-section">
+                    <h3>报单/撤单总量类阈值</h3>
+                    <div class="form-group">
+                        <label>报单总笔数阈值:</label>
+                        <input type="number" id="cfgTotalOrder" value="1000" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>撤单总笔数阈值:</label>
+                        <input type="number" id="cfgTotalCancel" value="500" min="1">
+                    </div>
+                </div>
+                
+                <div class="config-section">
+                    <h3>单笔限制</h3>
+                    <div class="form-group">
+                        <label>单笔最大手数:</label>
+                        <input type="number" id="cfgMaxVolume" value="100" min="1">
+                    </div>
+                </div>
+                
+                <div class="config-section">
+                    <h3>校验规则</h3>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" id="cfgCheckContract" checked> 合约代码合法性检查</label>
+                        <label><input type="checkbox" id="cfgCheckTickSize" checked> 最小变动价位检查</label>
+                        <label><input type="checkbox" id="cfgCheckMaxVolume" checked> 单笔最大手数检查</label>
+                        <label><input type="checkbox" id="cfgCheckBalance" checked> 资金检查</label>
+                        <label><input type="checkbox" id="cfgCheckPosition" checked> 持仓检查</label>
+                        <label><input type="checkbox" id="cfgCheckMarket" checked> 市场状态检查</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="saveConfig()">保存</button>
+                <button class="btn btn-secondary" onclick="closeConfigModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
+

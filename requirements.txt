@@ -1,0 +1,10 @@
+vnpy_ctabacktester
+vnpy_datamanager
+vnpy_ctastrategy
+vnpy_sqlite
+vnpy_portfoliostrategy
+vnpy_tqsdk
+
+sqlalchemy
+dotenv
+psycopg

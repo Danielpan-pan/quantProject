@@ -1,0 +1,98 @@
+{
+  "meta": {
+    "name": "期货程序化交易系统功能测试配置",
+    "version": "1.0",
+    "created": "2025-11-24 14:49:28"
+  },
+  "test_scenarios": [
+    {
+      "name": "认证功能测试",
+      "type": "IF-001",
+      "enabled": true
+    },
+    {
+      "name": "登录测试",
+      "type": "IF-002",
+      "enabled": true
+    },
+    {
+      "name": "开仓指令测试",
+      "type": "TR-001",
+      "enabled": false,
+      "direction": "long",
+      "volume": 1,
+      "price": 7000.0
+    },
+    {
+      "name": "平仓指令测试",
+      "type": "TR-002",
+      "enabled": false,
+      "direction": "long",
+      "volume": 1,
+      "price": 7010.0
+    },
+    {
+      "name": "撤单指令测试",
+      "type": "TR-003",
+      "enabled": false,
+      "order_count": 1
+    },
+    {
+      "name": "连接状态监测",
+      "type": "MON-001",
+      "enabled": true
+    },
+    {
+      "name": "重复开仓监测",
+      "type": "MON-002",
+      "enabled": false,
+      "symbol": "ag2512.SHFE"
+    },
+    {
+      "name": "报单总笔数监测",
+      "type": "MON-005",
+      "enabled": true
+    },
+    {
+      "name": "重复开仓阈值预警测试",
+      "type": "TH-002",
+      "enabled": false,
+      "symbol": "ag2512.SHFE"
+    },
+    {
+      "name": "合约代码校验测试",
+      "type": "VAL-001",
+      "enabled": false,
+      "symbol": "INVALID123"
+    },
+    {
+      "name": "价格最小变动价位测试",
+      "type": "VAL-002",
+      "enabled": false,
+      "price": 7000.5
+    },
+    {
+      "name": "单笔最大手数测试",
+      "type": "VAL-003",
+      "enabled": false,
+      "volume": 60
+    },
+    {
+      "name": "资金不足测试",
+      "type": "ERR-001",
+      "enabled": true,
+      "price": 10000.0,
+      "volume": 1000
+    },
+    {
+      "name": "日志持久化测试",
+      "type": "LOG-001",
+      "enabled": true
+    },
+    {
+      "name": "日志内容覆盖测试",
+      "type": "LOG-002",
+      "enabled": true
+    }
+  ]
+}

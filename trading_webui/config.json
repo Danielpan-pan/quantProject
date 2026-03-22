@@ -1,0 +1,81 @@
+{
+  "ctp": {
+    "trade_server": "61.186.254.137:33433",
+    "market_server": "61.186.254.137:33435",
+    "broker_id": "6666",
+    "userid": "50004711",
+    "password": "P12345678",
+    "appid": "client_vnpyljjsgq_4.1.0",
+    "authcode": "G47NWBHEZ6T6SA77",
+    "product_info": "",
+    "environment": "test"
+  },
+  "risk": {
+    "enabled": true,
+    "repeat_open_threshold": 10,
+    "repeat_close_threshold": 10,
+    "repeat_cancel_threshold": 10,
+    "repeat_time_window": 60,
+    "total_order_threshold": 1000,
+    "total_cancel_threshold": 500,
+    "total_time_period": "day",
+    "max_order_volume": 100
+  },
+  "validation": {
+    "check_contract": true,
+    "check_tick_size": true,
+    "check_max_volume": true,
+    "check_balance": true,
+    "check_position": true,
+    "check_market_status": true
+  },
+  "alert": {
+    "enable_sound": true,
+    "enable_popup": true,
+    "enable_email": false,
+    "enable_sms": false,
+    "email_recipients": [],
+    "sms_recipients": []
+  },
+  "trading": {
+    "default_strategy": "",
+    "default_symbols": [],
+    "auto_start": false,
+    "enable_backtesting": true
+  },
+  "subscriptions": [
+    {
+      "symbol": "TS2512",
+      "exchange": "CFFEX"
+    },
+    {
+      "symbol": "TL2603",
+      "exchange": "CFFEX"
+    },
+    {
+      "symbol": "IF2606",
+      "exchange": "CFFEX"
+    },
+    {
+      "symbol": "ag2602",
+      "exchange": "SHFE"
+    },
+    {
+      "symbol": "ag2604",
+      "exchange": "SHFE"
+    }
+  ],
+  "logging": {
+    "level": "INFO",
+    "file_path": "logs/trading.log",
+    "max_file_size": 10485760,
+    "backup_count": 10,
+    "console_output": true
+  },
+  "webui": {
+    "host": "0.0.0.0",
+    "port": 8080,
+    "debug": false,
+    "secret_key": "vnpy-trading-webui-secret-key-change-this"
+  }
+}

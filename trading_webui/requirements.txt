@@ -1,0 +1,23 @@
+# VNPY 核心依赖
+vnpy==4.2.0
+vnpy-ctp==6.7.2.1
+
+# Web 框架
+Flask==3.0.0
+flask-cors==4.0.0
+flask-socketio==5.3.5
+python-socketio==5.10.0
+
+# 事件驱动
+eventlet==0.33.3
+
+# 数据处理
+pandas==2.1.4
+numpy==1.26.2
+
+# 日志
+loguru==0.7.2
+
+# 其他工具
+python-dotenv==1.0.0
+
