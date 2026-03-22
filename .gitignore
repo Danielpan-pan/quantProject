@@ -57,3 +57,18 @@ vnpy_trade/
 
 # logs
 **/logs/**
+
+
+# Python 虚拟环境
+.venv/
+venv/
+ENV/
+env/
+
+# Python 编译缓存
+**/__pycache__/
+*.py[cod]
+*$py.class
+
+# 操作系统文件
+.DS_Store
